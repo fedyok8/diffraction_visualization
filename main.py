@@ -1,7 +1,7 @@
 #!/home/fedyok8/anaconda3/envs/pyqt/bin/python
 
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
 
@@ -30,6 +30,20 @@ class Example(QWidget):
         button_exit.move(100, 100)
 
         self.show()
+
+    def closeEvent(self, event):
+
+        reply = QMessageBox.question(
+            self,
+            'Warning',
+            'Are you sure to quit?',
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
 
 
 if __name__ == '__main__':
