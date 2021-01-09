@@ -1,7 +1,7 @@
 #!/home/fedyok8/anaconda3/envs/pyqt/bin/python
 
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QMessageBox, QDesktopWidget
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
 
@@ -13,8 +13,12 @@ class Example(QWidget):
 
 
     def initUI(self):
+        self.resize(500, 500)
+        self.move_to_center()
 
-        self.setGeometry(0, 0, 500, 500)
+        #if you want to define your own window geometry:
+        # self.setGeometry(0, 0, 500, 500)
+
         self.setWindowTitle('diffraction')
         self.setWindowIcon(QIcon('./app_icon.jpeg'))
 
@@ -32,7 +36,6 @@ class Example(QWidget):
         self.show()
 
     def closeEvent(self, event):
-
         reply = QMessageBox.question(
             self,
             'Warning',
@@ -45,6 +48,11 @@ class Example(QWidget):
         else:
             event.ignore()
 
+    def move_to_center(self):
+        window_rect = self.frameGeometry()
+        center_point = QDesktopWidget().availableGeometry().center()
+        window_rect.moveCenter(center_point)
+        self.move(window_rect.topLeft())
 
 if __name__ == '__main__':
 
