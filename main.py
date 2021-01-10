@@ -75,7 +75,6 @@ class Example(QWidget):
         self.move(window_rect.topLeft())
 
 class PlotCanvas(FigureCanvas):
-
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
@@ -90,9 +89,10 @@ class PlotCanvas(FigureCanvas):
         self.plot()
 
     def plot(self):
-        angles, intensities = difraction()
+        difraction = difraction_model()
         ax = self.figure.add_subplot(111)
-        ax.plot(angles, intensities)
+        ax.plot(difraction['x'], difraction['I'])
+        ax.set_xlim(-1, 1)
         ax.set_title('difratcion on gap')
         self.draw()
 
@@ -101,29 +101,38 @@ def intensity(angle):
         return 1
     else:
         b = 1 #mm (gap width)
-        wavelength = 700 #nm
+        wavelength = 450 #nm
+
         b *= 1e-3
         wavelength *= 1e-7
-
         k = 2 * np.pi / wavelength
         u = k * b * np.sin(angle) / 2
 
-        return np.sin(u) / u
+        return (np.sin(u) / u)**2
 
-def difraction():
-    N = 1000
-    angle1 = -np.pi/2
-    angle2 = np.pi/2
-    delta_a = angle2 - angle1
-    h = delta_a / N
+def difraction_model():
+    points_count = 1000
+    angle1 = -np.pi/6
+    angle2 = np.pi/6
+    L = 5
+
+    h = (angle2 - angle1) / points_count
+
+    difraction = {
+        'fi': list(),
+        'x': list(),
+        'I': list()
+    }
 
     angles = list()
     intensities = list()
-    for i in range(N-1):
+    coordinates = list()
+    for i in range(points_count-1):
         angle = angle1+(i+1)*h
-        angles.append(angle)
-        intensities.append(intensity(angle))
-    return angles, intensities
+        difraction['fi'].append(angle)
+        difraction['x'].append(np.tan(angle) * L)
+        difraction['I'].append(intensity(angle))
+    return difraction
 
 
 if __name__ == '__main__':
