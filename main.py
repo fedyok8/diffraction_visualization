@@ -2,6 +2,7 @@
 
 import sys
 import numpy as np
+import random
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
@@ -21,12 +22,9 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
-import random
-
 class Example(QWidget):
     def __init__(self):
         super().__init__()
-
         self.initUI()
 
     def initUI(self):
@@ -39,10 +37,6 @@ class Example(QWidget):
         self.setWindowTitle('Example window')
         self.setWindowIcon(QIcon('./app_icon.jpeg'))
 
-        btn = QPushButton('Button1', self)
-        btn.resize(btn.sizeHint())
-        btn.move(900, 10)
-
         button_exit = QPushButton('Quit', self)
         button_exit.clicked.connect(
             QCoreApplication.instance().quit
@@ -50,7 +44,7 @@ class Example(QWidget):
         button_exit.resize(button_exit.sizeHint())
         button_exit.move(900, 100)
 
-        m = PlotCanvas(self, width=5, height=4)
+        m = PlotCanvas(self, width=8, height=8)
         m.move(0,0)
 
         self.show()
@@ -92,7 +86,6 @@ class PlotCanvas(FigureCanvas):
         difraction = difraction_model()
         ax = self.figure.add_subplot(111)
         ax.plot(difraction['x'], difraction['I'])
-        ax.set_xlim(-1, 1)
         ax.set_title('difratcion on gap')
         self.draw()
 
@@ -101,37 +94,47 @@ def intensity(angle):
         return 1
     else:
         b = 1 #mm (gap width)
+        d = 10 #mm (diffraction grating period)
         wavelength = 450 #nm
+        N = 4 #count of gaps
 
         b *= 1e-3
+        d *= 1e-3
+        if (b > d):
+            print("error input parameters:\nb > d\nprogram aborted")
+            sys.exit()
         wavelength *= 1e-7
         k = 2 * np.pi / wavelength
         u = k * b * np.sin(angle) / 2
+        deltam = k * d * np.sin(angle) / 2
 
-        return (np.sin(u) / u)**2
+        return (
+            np.sin(u)
+            / u
+            * np.sin(N * deltam)
+            / np.sin(deltam)
+        )**2
 
 def difraction_model():
     points_count = 1000
-    angle1 = -np.pi/6
-    angle2 = np.pi/6
-    L = 5
+    x1 = -1 #x is coordinate on screen
+    x2 = 1
+    L = 5 #lenth from gap to screen
 
-    h = (angle2 - angle1) / points_count
+    h = (x2 - x1) / points_count
 
     difraction = {
-        'fi': list(),
-        'x': list(),
-        'I': list()
+        'fi': np.zeros(points_count+1),
+        'x': np.zeros(points_count+1),
+        'I': np.zeros(points_count+1)
     }
 
-    angles = list()
-    intensities = list()
-    coordinates = list()
-    for i in range(points_count-1):
-        angle = angle1+(i+1)*h
-        difraction['fi'].append(angle)
-        difraction['x'].append(np.tan(angle) * L)
-        difraction['I'].append(intensity(angle))
+    for i in range(points_count + 1):
+        x = x1 + i * h
+        angle = np.arctan(x / L)
+        difraction['fi'][i] = angle
+        difraction['x'][i] = x
+        difraction['I'][i] = intensity(angle)
     return difraction
 
 
