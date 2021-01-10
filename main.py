@@ -1,6 +1,7 @@
 #!/home/fedyok8/anaconda3/envs/pyqt/bin/python
 
 import sys
+import numpy as np
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QCoreApplication
@@ -89,11 +90,40 @@ class PlotCanvas(FigureCanvas):
         self.plot()
 
     def plot(self):
-        data = [random.random() for i in range(25)]
+        angles, intensities = difraction()
         ax = self.figure.add_subplot(111)
-        ax.plot(data, 'r-')
-        ax.set_title('PyQt Matplotlib Example')
+        ax.plot(angles, intensities)
+        ax.set_title('difratcion on gap')
         self.draw()
+
+def intensity(angle):
+    if angle == 0:
+        return 1
+    else:
+        b = 1 #mm (gap width)
+        wavelength = 700 #nm
+        b *= 1e-3
+        wavelength *= 1e-7
+
+        k = 2 * np.pi / wavelength
+        u = k * b * np.sin(angle) / 2
+
+        return np.sin(u) / u
+
+def difraction():
+    N = 1000
+    angle1 = -np.pi/2
+    angle2 = np.pi/2
+    delta_a = angle2 - angle1
+    h = delta_a / N
+
+    angles = list()
+    intensities = list()
+    for i in range(N-1):
+        angle = angle1+(i+1)*h
+        angles.append(angle)
+        intensities.append(intensity(angle))
+    return angles, intensities
 
 
 if __name__ == '__main__':
